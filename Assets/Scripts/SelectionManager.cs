@@ -18,6 +18,11 @@ public class SelectionManager : MonoBehaviour
     public Image HandIcon;
     public Image CenterDot;
 
+    // Cutting down tree
+    public GameObject selectedTree;
+    public GameObject chopHolder;
+
+
 
 
     private void Start()
@@ -45,6 +50,25 @@ public class SelectionManager : MonoBehaviour
         {
             var selectionTransform = hit.transform;
             interaction interactable = selectionTransform.GetComponent<interaction>();
+
+
+            ChoppableTree choppableTree = selectionTransform.GetComponent<ChoppableTree>();
+
+            if (choppableTree && choppableTree.playerInRange)
+            {
+                choppableTree.canBechopped = true;
+                selectedTree = choppableTree.gameObject;
+                chopHolder.gameObject.SetActive(true);
+            }
+            else
+            {
+                if (selectedTree != null)
+                {
+                    selectedTree.gameObject.GetComponent<ChoppableTree>().canBechopped = false;
+                    selectedTree = null;
+                    chopHolder.gameObject.SetActive(false);
+                }
+            }
 
             if (interactable && interactable.Rangedetect)
             {

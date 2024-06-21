@@ -186,19 +186,19 @@ public class Playermovement : MonoBehaviour
 
         /// Click left mouse
 
-        if (Input.GetKeyDown(KeyCode.Mouse0) && !IsAttack)
+        if (Input.GetKeyDown(KeyCode.Mouse0))
         {
-            IsAttack = true;
-            animator.SetBool("IsAttack", true);
+            GameObject selectedTree = SelectionManager.Instance.selectedTree;
+            if (selectedTree != null)
+            {
+                selectedTree.GetComponent<ChoppableTree>().GetHit();
+            }
+            animator.SetTrigger("Hit");
 
         }
+       
 
-        else if (Input.GetKeyUp(KeyCode.Mouse0) && IsAttack)
-        {
-            IsAttack = false;
-            animator.SetBool("IsAttack", false);
-
-        }
+        //
 
 
         /// Walking back
@@ -237,7 +237,7 @@ public class Playermovement : MonoBehaviour
         }
 
 
-
+        
 
       
 
