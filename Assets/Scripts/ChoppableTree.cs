@@ -1,3 +1,4 @@
+using IL3DN;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -13,6 +14,7 @@ public class ChoppableTree : MonoBehaviour
     public float treeHealth;
     private float treeMaxHealth = 200;
     public Animator animator;
+   
 
     // Start is called before the first frame update
     void Start()
@@ -38,26 +40,28 @@ public class ChoppableTree : MonoBehaviour
     }
     public void GetHit()
     {
-        StartCoroutine(Hit());
+        SoundManager.instance.Cutting();
+        animator.SetTrigger("Shake");
+        treeHealth -= 18;
+        PlayerStatus.instance.currentStamina -= 5; // consuming stamina
+        if (treeHealth < 0)
+        {
+            SoundManager.instance.Dropping();
+            TreeIsDead();
+        }
 
     }
 
     public IEnumerator Hit()
     {
-        yield return new WaitForSeconds(0.8f);
-        animator.SetTrigger("Shake");
-        treeHealth -= 20;
-
-        if(treeHealth < 0)
-        {
-            TreeIsDead();
-        }
+        yield return new WaitForSeconds(0.6f);
+        
         
     }
     void TreeIsDead()
     {
         Vector3 treePostion = transform.position;
-        Destroy(transform.parent.transform.parent.gameObject);
+        Destroy(transform.parent.gameObject);
         canBechopped = false;
         SelectionManager.Instance.selectedTree = null;
         SelectionManager.Instance.chopHolder.gameObject.SetActive(false);
@@ -75,12 +79,12 @@ public class ChoppableTree : MonoBehaviour
             GlobalState.Instance.resourceHealth = treeHealth;
             GlobalState.Instance.resourceMaxHealth = treeMaxHealth;
 
-
         }
 
         if (treeHealth<0)
         {
             treeHealth = 0;
         }
+      
     }
 }

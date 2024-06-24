@@ -22,6 +22,10 @@ public class SelectionManager : MonoBehaviour
     public GameObject selectedTree;
     public GameObject chopHolder;
 
+    public GameObject selectedBot;
+    public GameObject BotState;
+
+
 
 
 
@@ -52,8 +56,11 @@ public class SelectionManager : MonoBehaviour
             interaction interactable = selectionTransform.GetComponent<interaction>();
 
 
+           
             ChoppableTree choppableTree = selectionTransform.GetComponent<ChoppableTree>();
+            HumanisHit humanisHit = selectionTransform.GetComponent<HumanisHit>();
 
+            // Tree
             if (choppableTree && choppableTree.playerInRange)
             {
                 choppableTree.canBechopped = true;
@@ -69,6 +76,25 @@ public class SelectionManager : MonoBehaviour
                     chopHolder.gameObject.SetActive(false);
                 }
             }
+
+            // Bot
+            if (humanisHit && humanisHit.playerInRange)
+            {
+                humanisHit.canBeHit = true;
+                selectedBot = humanisHit.gameObject;
+                BotState.gameObject.SetActive(true);
+            }
+            else
+            {
+                if (selectedBot != null)
+                {
+                    selectedBot.gameObject.GetComponent<HumanisHit>().canBeHit = false;
+                    selectedBot = null;
+                    BotState.gameObject.SetActive(false);
+                }
+            }
+
+
 
             if (interactable && interactable.Rangedetect)
             {

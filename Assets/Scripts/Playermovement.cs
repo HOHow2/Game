@@ -2,18 +2,22 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(AudioSource))]
 public class Playermovement : MonoBehaviour
 {
     // Start is called before the first frame update
 
     private Animator animator;
     public CharacterController controller;
+    public static Playermovement instance { get; set; }
 
     public float speed = 3f;
     public float shiftSpeed = 4.5f;
     public float sneak_speed = 1.5f;
     public float gravity = -9.81f * 2;
     public float jumpHeight = 3f;
+    private AudioSource audio;
+
 
     public Transform groundCheck;
     public float groundDistance = 0.4f;
@@ -25,7 +29,7 @@ public class Playermovement : MonoBehaviour
     private bool isRunning;
     private bool isCrouching;
     private bool isSneaking;
-   
+
 
 
     public bool AlphaKey;
@@ -38,8 +42,8 @@ public class Playermovement : MonoBehaviour
     void Start()
     {
         animator = GetComponent<Animator>();
+        audio = GetComponent<AudioSource>();
         isCrouching = isSneaking = AlphaKey = IsAttack = false;
-
     }
 
     // Update is called once per frame
@@ -61,7 +65,7 @@ public class Playermovement : MonoBehaviour
 
         controller.Move(move * speed * Time.deltaTime);
         // update
-        
+
         velocity.y += gravity * Time.deltaTime;
 
         controller.Move(velocity * Time.deltaTime);
@@ -71,7 +75,7 @@ public class Playermovement : MonoBehaviour
         //check if the player is on the ground so he can jump
         if (Input.GetKey(KeyCode.Space) && isGrounded)
         {
-            
+
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
             animator.SetBool("IsJumping", true);
         }
@@ -83,9 +87,12 @@ public class Playermovement : MonoBehaviour
 
         //////////////////////////           Animator of Character
 
-        
+
         if (move != Vector3.zero)
         {
+            // Sound Effect which is walking
+            audio.pitch = 0.86f;
+            SoundManager.instance.Running(audio);
             animator.SetBool("IsWalking", true);
             animator.SetBool("IsRunning", false);
             animator.SetBool("IsSneaking", isCrouching);
@@ -94,11 +101,16 @@ public class Playermovement : MonoBehaviour
             // Running
             if (Input.GetKey(KeyCode.LeftShift))
             {
+                
                 Vector3 run = transform.right * x + transform.forward * z;
                 controller.Move(shiftSpeed * run * Time.deltaTime);
                 animator.SetBool("IsRunning", true);
                 animator.SetBool("IsWalking", false);
                 isRunning = true;
+                // Sound Effect which is running
+                audio.pitch = 1.92f;
+                SoundManager.instance.Running(audio);
+
 
             }
             else
@@ -113,6 +125,7 @@ public class Playermovement : MonoBehaviour
             // Sneaking
             if (Input.GetKeyDown(KeyCode.C) && !isCrouching)
             {
+               
                 isSneaking = true;
                 animator.SetBool("IsSneaking", true);
 
@@ -121,6 +134,7 @@ public class Playermovement : MonoBehaviour
             {
                 isSneaking = false;
                 animator.SetBool("IsSneaking", false);
+                
             }
 
         }
@@ -137,7 +151,8 @@ public class Playermovement : MonoBehaviour
             isCrouching = true;
             animator.SetBool("IsCrouching", true);
             animator.SetBool("IsWalkForward", true);
-            if (isRunning) {
+            if (isRunning)
+            {
                 animator.SetBool("IsCrouching", false);
                 animator.SetBool("IsRunning", true);
 
@@ -147,7 +162,7 @@ public class Playermovement : MonoBehaviour
                 animator.SetBool("IsCrouching", true);
                 animator.SetBool("IsRunning", false);
             }
-            
+
 
         }
         else if (Input.GetKeyDown(KeyCode.C) && isCrouching)
@@ -162,41 +177,28 @@ public class Playermovement : MonoBehaviour
 
 
 
-
-
         /// Combat
         if (Input.GetKeyDown(KeyCode.Alpha1) && !AlphaKey || Input.GetKeyDown(KeyCode.Alpha2) && !AlphaKey || Input.GetKeyDown(KeyCode.Alpha3) && !AlphaKey)
         {
             AlphaKey = true;
-            animator.SetBool("IsDrawing",true);
-            
+            animator.SetBool("IsDrawing", true);
+
         }
-        else if(Input.GetKeyDown(KeyCode.Alpha1) && AlphaKey || Input.GetKeyDown(KeyCode.Alpha2) && AlphaKey || Input.GetKeyDown(KeyCode.Alpha3) && AlphaKey)
+        else if (Input.GetKeyDown(KeyCode.Alpha1) && AlphaKey || Input.GetKeyDown(KeyCode.Alpha2) && AlphaKey || Input.GetKeyDown(KeyCode.Alpha3) && AlphaKey)
         {
             AlphaKey = false;
             animator.SetBool("IsDrawing", false);
         }
 
 
-       
 
-
-
-
-
-        /// Click left mouse
+        /// Click mouse
 
         if (Input.GetKeyDown(KeyCode.Mouse0))
         {
-            GameObject selectedTree = SelectionManager.Instance.selectedTree;
-            if (selectedTree != null)
-            {
-                selectedTree.GetComponent<ChoppableTree>().GetHit();
-            }
-            animator.SetTrigger("Hit");
 
+            animator.SetTrigger("Hit");
         }
-       
 
         //
 
@@ -225,7 +227,7 @@ public class Playermovement : MonoBehaviour
         }
 
         /// Walking right
-        
+
         if (Input.GetKeyDown(KeyCode.D))
         {
             animator.SetBool("IsWalkRight", true);
@@ -237,9 +239,23 @@ public class Playermovement : MonoBehaviour
         }
 
 
-        
 
-      
+    }
+    public void GetHit()
+    {
+        GameObject selectedTree = SelectionManager.Instance.selectedTree;
+        GameObject selectedBot = SelectionManager.Instance.selectedBot;
+
+        if (selectedTree != null)
+        {
+            selectedTree.GetComponent<ChoppableTree>().GetHit();
+        }
+
+        if (selectedBot != null)
+        {
+            selectedBot.GetComponent<HumanisHit>().GetHit();
+        }
+
 
     }
 
